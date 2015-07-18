@@ -1,0 +1,54 @@
+#!/bin/bash
+set -ue
+LANG=C
+
+# rubyダウンロードサイトのURLを変数に格納する
+GETURI=http://ftp.ruby-lang.org/pub/ruby
+
+# 引数があれば1番目の引数を、引数がなければrubyの最新版を変数に格納する
+if [ ! 0 = $# ];
+then
+  RUBYARC=$(curl -s ${GETURI}/ | \
+  grep ruby | sed -e 's/<[^>]*>/ /g' | awk '{print $1}' | \
+  sort | uniq | grep tar.gz$ | grep $1 | sed -e "s|^|${GETURI}/|")
+else
+  RUBYARC=$(curl -s ${GETURI}/ | \
+  grep ruby | sed -e 's/<[^>]*>/ /g' | awk '{print $1}' | \
+  sort | uniq | grep tar.gz$ | tail -n 1 | sed -e "s|^|${GETURI}/|")
+fi
+
+# ${HOME}/src ディレクトリがなければ作成する
+mkdir -p ${HOME}/src
+
+# ダウンロードサイト上にあるrubyのバージョン一覧を表示する関数
+## [仕様]ダウンロードサイトをスクレイピングして1フィールド目を抜き出している。
+LISTGET() {
+curl -s ${GETURI}/ | grep ruby | sed -e 's/<[^>]*>/ /g' | awk '{print $1}' | \
+sed -e 's/.tar.[bgx]z.*$//g;s/.zip$//g;/^Index/d' | sort | uniq
+}
+
+# ${HOME}/src にrubyをダウンロードする関数
+RUBYGET() {
+cd ${HOME}/src
+curl -L -O ${RUBYARC}
+cd ${HOME}
+}
+
+# RUBYARC変数の文字列が0バイトであれば異常終了させる
+if [ 0 = ${#RUBYARC} ];
+then
+  LISTGET
+  echo "Usage: $(basename $0) | $(basename $0) ruby-n.n.n"
+  exit 1
+fi
+
+# ${HOME}/src にrubyをダウンロードする
+## [仕様]RUBYARC変数に格納された文字列がrubyのバージョン一覧にあればダウンロードし、なければLISTGET関数を実行し、Usageを表示して異常終了させる。
+if [ 0 = $(LISTGET | grep $(basename ${RUBYARC} | sed -e 's/.tar.[bgx]z.*$//g;s/.zip$//g;/^Index/d') > /dev/null ; echo $?) ];
+then
+  RUBYGET
+else
+  LISTGET
+  echo "Usage: $(basename $0) | $(basename $0) ruby-n.n.n"
+  exit 1
+fi

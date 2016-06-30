@@ -9,11 +9,11 @@ GETURI=http://ftp.ruby-lang.org/pub/ruby
 if [ ! 0 = $# ];
 then
   RUBYARC=$(curl -s ${GETURI}/ | \
-  grep ruby | sed -e 's/<[^>]*>/ /g' | awk '{print $1}' | \
+  grep ruby | sed -e 's/<[^>]*>/ /g' | awk '{print $1}' | egrep -iv preview | \
   sort | uniq | grep tar.gz$ | grep $1 | sed -e "s|^|${GETURI}/|")
 else
   RUBYARC=$(curl -s ${GETURI}/ | \
-  grep ruby | sed -e 's/<[^>]*>/ /g' | awk '{print $1}' | \
+  grep ruby | sed -e 's/<[^>]*>/ /g' | awk '{print $1}' | egrep -iv preview | \
   sort | uniq | grep tar.gz$ | tail -n 1 | sed -e "s|^|${GETURI}/|")
 fi
 

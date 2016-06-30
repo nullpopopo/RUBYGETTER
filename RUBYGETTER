@@ -24,7 +24,7 @@ mkdir -p ${HOME}/src
 ## [仕様]ダウンロードサイトをスクレイピングして1フィールド目を抜き出している。
 LISTGET() {
 curl -s ${GETURI}/ | grep ruby | sed -e 's/<[^>]*>/ /g' | awk '{print $1}' | \
-sed -e 's/.tar.[bgx]z.*$//g;s/.zip$//g;/^Index/d' | sort | uniq
+sed -e 's/.tar.[bgx]z.*$//g;s/.zip$//g;/^Index/d' | egrep -iv preview | sort | uniq
 }
 
 # ${HOME}/src にrubyをダウンロードする関数
